@@ -1,11 +1,13 @@
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import MensajeError from "./MensajeError";
+import {auth} from '../firebase';
 
 const Login = () => {
     //Hooks State
     const [email, setEmail] = useState('');
     const [pass, setPass] = useState('');
     const [mensajeError, setMensajeError] = useState('')
+    const [esRegistro, setEsRegistro] = useState(true)
 
     //Procesando login
     const procesarDatos = (e) => {
@@ -23,12 +25,37 @@ const Login = () => {
 
         setMensajeError('')
         console.log('Iniciaste sesion')
+
+        if(esRegistro){
+            registrar();
+        }
     }
+
+    //Registrando usuario nuevo en firebase
+    const registrar = useCallback( async () =>{
+
+        try {
+            const resultado = await auth.createUserWithEmailAndPassword(email, pass);
+            console.log(resultado);
+        } catch (error) {
+            if(error.code === 'auth/invalid-email'){
+            setMensajeError('Email invalido');
+            }
+            if(error.code === 'auth/email-already-in-use'){
+                setMensajeError('Email registrado');
+            }
+
+        }
+    },[email, pass]);
 
 
     return (
         <div className="mt-5">
-            <h3 className="text-center">Acceso o registro de usuario</h3>
+            <h3 className="text-center">
+                {
+                    esRegistro ? 'Registro de usuarios' : 'Login de Acceso'
+                }
+            </h3>
             <hr />
             <div className="row justify-content-center">
                 <div className="col-12 col-sm-8 col-md-6 col-xl-4">
@@ -49,13 +76,25 @@ const Login = () => {
                             value={pass}
                         />
                         <div className="d-grid gap-2">
-                            <button className="btn btn-dark btn-lg" type="submit">Registrarse</button>
-                            <button className="btn btn-primary btn-sm" type="submit">¿Ya tienes cuenta?</button>
+                            <button 
+                                className="btn btn-dark btn-lg" 
+                                type="submit">
+                                    {
+                                        esRegistro ? 'Registrarse' : 'Acceder'
+                                    }
+                            </button>
+                            <button 
+                                className="btn btn-primary btn-sm" 
+                                type="button"
+                                onClick={() => setEsRegistro(!esRegistro)}>
+                                    {
+                                        esRegistro ? '¿Ya estas registrado?' : '¿No tienes cuenta?'
+                                    }
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
-            
         </div>
     )
 }
