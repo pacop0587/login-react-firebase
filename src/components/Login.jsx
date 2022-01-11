@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react"
 import MensajeError from "./MensajeError";
-import {auth} from '../firebase';
+import {auth, db} from '../firebase';
 
 const Login = () => {
     //Hooks State
@@ -37,6 +37,14 @@ const Login = () => {
         try {
             const resultado = await auth.createUserWithEmailAndPassword(email, pass);
             console.log(resultado);
+            await db.collection('usuarios').doc(resultado.user.email).set({
+                email: resultado.user.email,
+                uid: resultado.user.uid
+            })
+            setEmail('');
+            setPass('');
+            setMensajeError('');
+            
         } catch (error) {
             if(error.code === 'auth/invalid-email'){
             setMensajeError('Email invalido');
