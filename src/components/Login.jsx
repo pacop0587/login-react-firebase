@@ -24,12 +24,30 @@ const Login = () => {
         }
 
         setMensajeError('')
-        console.log('Iniciaste sesion')
-
+        
         if(esRegistro){
             registrar();
         }
+        else{
+            login()
+        }
     }
+
+    const login = useCallback( async() =>{
+        try {
+            const resultado = await auth.signInWithEmailAndPassword(email, pass)
+            console.log(resultado.user)
+            
+        } catch (error) {
+            if(error.code === 'auth/user-not-found'){
+                setMensajeError('Usuario no registrado')
+            }
+            if(error.code === 'auth/wrong-password'){
+                setMensajeError('Contraseña incorrecta')
+            }
+            console.log(error)
+        }
+    },[email, pass])
 
     //Registrando usuario nuevo en firebase
     const registrar = useCallback( async () =>{
@@ -44,7 +62,7 @@ const Login = () => {
             setEmail('');
             setPass('');
             setMensajeError('');
-            
+
         } catch (error) {
             if(error.code === 'auth/invalid-email'){
             setMensajeError('Email invalido');
